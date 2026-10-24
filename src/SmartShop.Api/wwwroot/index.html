@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Smart Shop product insights, customer sentiment and AI shopping support.">
+  <title>Smart Shop | Review insights</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand"><span class="brand-icon" aria-hidden="true">s.</span>smart shop<span class="brand-label">INSIGHTS</span></a>
+    <span class="workspace">Product intelligence <span class="status-dot"></span></span>
+  </header>
+  <main>
+    <div class="page-heading">
+      <div><p class="eyebrow">THE CUSTOMER PERSPECTIVE</p><h1>Good products. <span>Better insights.</span></h1>
+      <p class="subtitle">Understand every review. Find the right product. Let AI handle the details.</p></div>
+      <button id="refresh" class="button secondary">Refresh data <span aria-hidden="true">↻</span></button>
+    </div>
+
+    <section class="metrics" aria-label="Review overview">
+      <article class="metric"><span class="metric-label">Total reviews</span><strong id="total-reviews">—</strong><span class="metric-note">Across the entire catalog</span></article>
+      <article class="metric"><span class="metric-label">Positive sentiment <span class="mini-dot positive"></span></span><strong id="positive-rate">—</strong><span class="metric-note">Of analyzed reviews</span></article>
+      <article class="metric"><span class="metric-label">Products reviewed <span class="star" aria-hidden="true">★</span></span><strong id="reviewed-products">—</strong><span class="metric-note">With customer feedback</span></article>
+      <article class="metric accent"><span class="metric-label">In the catalog</span><strong id="product-count">—</strong><span class="metric-note">Products ready to explore <span aria-hidden="true">↗</span></span></article>
+    </section>
+
+    <section class="panel report-panel" aria-labelledby="report-heading">
+      <div class="section-heading"><div><p class="eyebrow">LISTEN. LEARN. IMPROVE.</p><h2 id="report-heading">Review report</h2></div><span class="badge">LIVE DATABASE</span></div>
+      <div class="table-scroll"><table>
+        <caption class="sr-only">Review counts by sentiment and average rating for every product</caption>
+        <thead><tr><th scope="col">No</th><th scope="col">Product name</th><th scope="col">Total reviews</th><th scope="col">Positive</th><th scope="col">Negative</th><th scope="col">Neutral</th><th scope="col">Average rating</th></tr></thead>
+        <tbody id="report-body"><tr><td colspan="7" class="table-message">Loading your insights…</td></tr></tbody>
+      </table></div>
+      <div class="table-footer"><span id="report-note">Fetching the latest reviews</span><span>Sentiment analysis by Gemini</span></div>
+    </section>
+    <p id="page-error" class="error" role="alert" hidden></p>
+
+    <div class="lower-grid">
+      <section class="panel" aria-labelledby="product-heading">
+        <div class="section-heading"><div><p class="eyebrow">MEET YOUR NEXT FAVORITE</p><h2 id="product-heading">Product studio</h2></div><span class="small-label">01 / CREATE</span></div>
+        <div class="panel-content">
+          <label for="product-select">Choose a product</label><select id="product-select"><option value="">Loading catalog…</option></select>
+          <div class="product-preview"><span id="product-category" class="category">CATALOG</span><h3 id="product-name">Your product, in focus.</h3><strong id="product-price" class="price"></strong><p id="product-features">Select a product to explore its features.</p></div>
+          <button id="generate-description" class="button primary" disabled><span aria-hidden="true">✦</span> Generate description</button>
+          <div id="description-result" class="result" aria-live="polite" hidden></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="review-heading">
+        <div class="section-heading"><div><p class="eyebrow">EVERY OPINION COUNTS</p><h2 id="review-heading">Leave a review</h2></div><span class="small-label">02 / ANALYZE</span></div>
+        <form id="review-form" class="panel-content">
+          <label for="review-product">Product</label><select id="review-product" name="productId" required><option value="">Loading catalog…</option></select>
+          <div class="form-row"><div><label for="customer-name">Your name</label><input id="customer-name" name="customerName" maxlength="64" placeholder="e.g. Alex Nguyen" required></div><div><label for="rating">Rating</label><select id="rating" name="rating" required><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Average</option><option value="2">2 — Poor</option><option value="1">1 — Very poor</option></select></div></div>
+          <label for="review-content">Your experience</label><textarea id="review-content" name="content" rows="3" maxlength="1000" placeholder="What stood out? What could be better?" required></textarea>
+          <button id="analyze-review" class="button primary" type="submit" disabled>Submit &amp; analyze <span aria-hidden="true">↗</span></button>
+          <div id="review-result" class="result" aria-live="polite" hidden></div>
+        </form>
+      </section>
+    </div>
+
+    <section class="panel assistant-panel" aria-labelledby="assistant-heading">
+      <div class="section-heading"><div><p class="eyebrow">A LITTLE HELP CHOOSING</p><h2 id="assistant-heading"><span class="sparkle" aria-hidden="true">✦</span> Your shopping assistant</h2></div><button id="new-chat" class="text-button" type="button">New conversation ↗</button></div>
+      <div id="chat-log" class="chat-log" role="log" aria-live="polite" aria-label="Shopping conversation"><div class="chat-message model">Hi! I can help you compare products, explore features, and check prices in our catalog. What are you looking for?</div></div>
+      <div class="suggestions"><button type="button" data-prompt="Which phone has the biggest battery?">Compare phone batteries</button><button type="button" data-prompt="What laptops do you sell?">Find a laptop</button><button type="button" data-prompt="Which product is the cheapest?">Explore prices</button></div>
+      <form id="chat-form" class="chat-form"><label class="sr-only" for="chat-message">Your question</label><input id="chat-message" maxlength="2000" placeholder="Ask about our products…" autocomplete="off" required><button id="send-chat" class="button primary" type="submit">Send <span aria-hidden="true">↑</span></button></form>
+      <p class="chat-note">Answers use the current product catalog. AI can make mistakes; check product details.</p>
+    </section>
+    <footer>SMART SHOP <span>A clearer view of what customers think.</span><span>Powered by Google Gemini</span></footer>
+  </main>
+</body>
+</html>

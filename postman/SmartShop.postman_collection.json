@@ -1,0 +1,417 @@
+{
+  "info": {
+    "name": "Smart Shop - SET01 - Dang Xuan Bach",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "All four required APIs plus validation and conversation scenarios. Start the app and configure a Gemini API key on the server. Run in order. Review requests persist data. AI wording varies; inspect follow-up and refusal replies manually. No API key is stored in this collection."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5080"
+    },
+    {
+      "key": "sessionId",
+      "value": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get(\"sessionId\")) pm.collectionVariables.set(\"sessionId\", \"postman-\" + pm.variables.replaceIn(\"{{$guid}}\"));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Catalog (seed data)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/products"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Four exam products\", () => pm.expect(pm.response.json()).to.have.lengthOf(4));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - generatedescription",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/1/generatedescription",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const p = pm.response.json();",
+              "pm.test(\"Saved description, at most 80 words\", () => { pm.expect(p.productId).to.eql(1); pm.expect(p.description).to.be.a(\"string\").and.not.empty; pm.expect(p.description.trim().split(/\\s+/).length).to.be.at.most(80); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - analyzereview - positive",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/reviews/analyze",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": 1,\n  \"customerName\": \"Bach\",\n  \"content\": \"The display is beautiful and the camera is excellent. I love this phone!\",\n  \"rating\": 5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const r = pm.response.json();",
+              "pm.test(\"Analysis and saved identity\", () => { pm.expect(r.reviewId).to.be.above(0); pm.expect(r.sentiment).to.be.oneOf([\"Positive\",\"Negative\",\"Neutral\"]); pm.expect(r.score).to.be.within(0,1); pm.expect(r.summary.length).to.be.within(1,256); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - analyzereview - negative",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/reviews/analyze",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": 3,\n  \"customerName\": \"Linh\",\n  \"content\": \"Very disappointing. The earbuds feel uncomfortable and keep disconnecting. I regret buying them.\",\n  \"rating\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const r = pm.response.json();",
+              "pm.test(\"Analysis and saved identity\", () => { pm.expect(r.reviewId).to.be.above(0); pm.expect(r.sentiment).to.be.oneOf([\"Positive\",\"Negative\",\"Neutral\"]); pm.expect(r.score).to.be.within(0,1); pm.expect(r.summary.length).to.be.within(1,256); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - analyzereview - balanced",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/reviews/analyze",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": 2,\n  \"customerName\": \"Minh\",\n  \"content\": \"The laptop is fine. Battery life is good, but the price is high. Overall it is average for my needs.\",\n  \"rating\": 3\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const r = pm.response.json();",
+              "pm.test(\"Analysis and saved identity\", () => { pm.expect(r.reviewId).to.be.above(0); pm.expect(r.sentiment).to.be.oneOf([\"Positive\",\"Negative\",\"Neutral\"]); pm.expect(r.score).to.be.within(0,1); pm.expect(r.summary.length).to.be.within(1,256); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - shoppingassistant - battery question",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/assistant/chat",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"message\": \"Which phone has the biggest battery?\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const r = pm.response.json();",
+              "pm.test(\"Reply and matching session\", () => { pm.expect(r.reply).to.be.a(\"string\").and.not.empty; pm.expect(r.sessionId).to.eql(pm.collectionVariables.get(\"sessionId\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - shoppingassistant - same-session follow-up",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/assistant/chat",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"message\": \"How much does it cost?\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const r = pm.response.json();",
+              "pm.test(\"Reply and matching session\", () => { pm.expect(r.reply).to.be.a(\"string\").and.not.empty; pm.expect(r.sessionId).to.eql(pm.collectionVariables.get(\"sessionId\")); });",
+              "pm.test(\"Follow-up reply mentions catalog price\", () => pm.expect(pm.response.json().reply.replace(/[.,\\s]/g, \"\")).to.include(\"6490000\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - shoppingassistant - unrelated request (inspect refusal)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/assistant/chat",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"message\": \"Write me a recipe for chocolate cake.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const r = pm.response.json();",
+              "pm.test(\"Reply and matching session\", () => { pm.expect(r.reply).to.be.a(\"string\").and.not.empty; pm.expect(r.sessionId).to.eql(pm.collectionVariables.get(\"sessionId\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - getreviewreport",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/reports/reviews"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const rows = pm.response.json();",
+              "pm.test(\"Four rows with consistent counts\", () => { pm.expect(rows).to.have.lengthOf(4); rows.forEach((r,i) => { pm.expect(r.no).to.eql(i+1); pm.expect(r.totalReviews).to.eql(r.positive+r.negative+r.neutral); pm.expect(r.averageRating).to.be.within(0,5); }); });",
+              "pm.test(\"Submitted reviews are counted\", () => pm.expect(rows.reduce((sum,r) => sum+r.totalReviews,0)).to.be.at.least(3));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - invalid rating (no AI call)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/reviews/analyze",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": 1,\n  \"customerName\": \"Bach\",\n  \"content\": \"Good\",\n  \"rating\": 6\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - missing product (no AI call)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/999/generatedescription",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - invalid session (no AI call)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/assistant/chat",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"\",\n  \"message\": \"Hello\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

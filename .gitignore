@@ -1,0 +1,19 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+TestResults/
+tmp/
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
+*.user
+*.suo
+artifacts/
+
+# Local development and verification files are not part of the submission.
+/tests/
+/docs/
+/scripts/test-sqlserver.ps1
+/*.pdf
